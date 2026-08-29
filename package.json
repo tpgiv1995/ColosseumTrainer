@@ -7,6 +7,7 @@
     "start": "npx webpack serve",
     "build": "webpack",
     "link:sdk": "npm --prefix ../osrs-sdk run build && npm link ../osrs-sdk ../osrs-sdk/packages/osrs-sdk-react",
+    "test": "jest",
     "lint": "eslint . --ext .ts --fix",
     "prettier": "npx prettier --write ."
   },
