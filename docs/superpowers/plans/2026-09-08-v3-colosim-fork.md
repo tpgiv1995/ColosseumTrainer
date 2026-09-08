@@ -2,13 +2,13 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make the Sol Heredit Trainer fork behave like Pat's RuneLite client: right-drag camera, F1..F5 bindings, his real Colosseum kit with real models, modern bottom-bar layout, settings that survive resets, hosted on Netlify and runnable locally.
+**Goal:** Make the Sol Heredit Trainer fork behave like the reference RuneLite client: right-drag camera, F1..F5 bindings, his real Colosseum kit with real models, modern bottom-bar layout, settings that survive resets, hosted on Netlify and runnable locally.
 
 **Architecture:** Two linked repos. The engine (`C:\dev\colosim\osrs-sdk`, branch `pat`) gets the camera, keybind, layout, and item changes. The trainer (`C:\dev\colosim\trainer`, branch `pat`) gets the loadout, sidebar toggle, start script, and Netlify config. The trainer consumes the engine via `npm run link:sdk` locally and via `scripts/build-beta.sh` on Netlify.
 
 **Tech Stack:** TypeScript, webpack 5, three.js 0.163, React 18, jest 27 (ts-jest, jsdom), tsx for the Node-only cache-render scripts, Netlify CLI 27, gh CLI.
 
-**Spec:** `docs/superpowers/specs/2026-09-08-pat-colosim-fork-design.md` (in the trainer repo).
+**Spec:** `docs/superpowers/specs/2026-09-08-v3-colosim-fork-design.md` (in the trainer repo).
 
 ## Global Constraints
 
@@ -56,7 +56,7 @@ Expected: Sol32, SolAttack, SolMovement pass. If jest resolves `osrs-sdk` to the
 Write `C:\dev\colosim\start.cmd`:
 ```bat
 @echo off
-rem Sol Heredit Trainer, Pat's fork. Serves the cache-render bundle on 8081 and the trainer on 8000.
+rem Sol Heredit Trainer, V3 fork. Serves the cache-render bundle on 8081 and the trainer on 8000.
 start "colosim assets" cmd /k "cd /d C:\dev\colosim\osrs-sdk && npm run serve:assets"
 cd /d C:\dev\colosim\trainer
 set OSRS_ASSET_BASE_URL=https://assets-soltrainer.netlify.app
@@ -73,7 +73,7 @@ cd /c/dev/colosim/trainer && git add jest.config.js && git commit -m "test: reso
 
 ---
 
-### Task 2: Pat's keybind defaults, same-key panel toggle, Prayer 93
+### Task 2: V3 keybind defaults, same-key panel toggle, Prayer 93
 
 **Files:**
 - Modify: `C:\dev\colosim\osrs-sdk\src\sdk\Settings.ts` (`createDefaults`, lines ~215-245)
@@ -91,7 +91,7 @@ cd /c/dev/colosim/trainer && git add jest.config.js && git commit -m "test: reso
 ```ts
 import { Settings, SETTINGS_STORAGE_KEY } from "../../src/sdk/Settings";
 
-describe("Pat's keybind defaults", () => {
+describe("V3 keybind defaults", () => {
   beforeEach(() => {
     window.localStorage.clear();
     Settings.readFromStorage();
@@ -470,7 +470,7 @@ const PAT_IDS = [
   3024, 10925, 6685, 27641, 29796, 11806, 29577, 27509,
 ];
 
-test("every item in Pat's Colosseum setup resolves in the loadout registry", () => {
+test("every item in the V3 Colosseum setup resolves in the loadout registry", () => {
   const missing = PAT_IDS.filter((id) => !LoadoutRegistry.has(id));
   expect(missing).toEqual([]);
 });
@@ -667,12 +667,12 @@ Expected: `compiled successfully`, no `TS` errors.
 - [ ] **Step 12: Commit**
 
 ```bash
-cd /c/dev/colosim/osrs-sdk && git add src/assets/CacheAssets.ts src/sdk/ItemName.ts src/content src/assets/images test/content/PatKit.test.ts && git commit -m "feat: Pat's Colosseum kit items with wiki bonuses and cache ids"
+cd /c/dev/colosim/osrs-sdk && git add src/assets/CacheAssets.ts src/sdk/ItemName.ts src/content src/assets/images test/content/PatKit.test.ts && git commit -m "feat: V3 Colosseum kit items with wiki bonuses and cache ids"
 ```
 
 ---
 
-### Task 5: Trainer loadout "Pat Colosseum"
+### Task 5: Trainer loadout "V3 Colosseum"
 
 **Files:**
 - Modify: `C:\dev\colosim\trainer\src\content\colosseum\js\ColosseumLoadout.ts`
@@ -682,7 +682,7 @@ cd /c/dev/colosim/osrs-sdk && git add src/assets/CacheAssets.ts src/sdk/ItemName
 
 **Interfaces:**
 - Consumes: `CACHE_ASSETS.items.*` from Task 4.
-- Produces: exported `patColosseumLoadout: Loadout` named `"Pat Colosseum"`, first in `loadoutTemplates`; `Settings` default `loadout` is `"Pat Colosseum"`.
+- Produces: exported `v3ColosseumLoadout: Loadout` named `"V3 Colosseum"`, first in `loadoutTemplates`; `Settings` default `loadout` is `"V3 Colosseum"`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -690,16 +690,16 @@ cd /c/dev/colosim/osrs-sdk && git add src/assets/CacheAssets.ts src/sdk/ItemName
 ```ts
 import "../../../../test/setupFiles";
 import { LoadoutRegistry, Settings } from "osrs-sdk";
-import { patColosseumLoadout, colosseumLoadout } from "../js/ColosseumLoadout";
+import { v3ColosseumLoadout, colosseumLoadout } from "../js/ColosseumLoadout";
 
-test("Pat's loadout mirrors the RuneLite Inventory Setup", () => {
-  expect(patColosseumLoadout.name).toBe("Pat Colosseum");
-  expect(patColosseumLoadout.inventory).toHaveLength(28);
-  expect(patColosseumLoadout.equipment).toEqual({
+test("the V3 loadout mirrors the RuneLite Inventory Setup", () => {
+  expect(v3ColosseumLoadout.name).toBe("V3 Colosseum");
+  expect(v3ColosseumLoadout.inventory).toHaveLength(28);
+  expect(v3ColosseumLoadout.equipment).toEqual({
     weapon: 28260, offhand: null, helmet: 29041, necklace: 24780, cape: 6570,
     ammo: 22947, chest: 29037, legs: 29039, feet: 31095, gloves: 31106, ring: 25975,
   });
-  expect(patColosseumLoadout.inventory).toEqual([
+  expect(v3ColosseumLoadout.inventory).toEqual([
     12006, 7462, 25886, 27721, 12954, 33639, 27729, 27725,
     12695, 12695, 2444, 2444, 3024, 3024, 3024, 3024,
     3024, 3024, 10925, 6685, 6685, 6685, 6685, 27641,
@@ -707,15 +707,15 @@ test("Pat's loadout mirrors the RuneLite Inventory Setup", () => {
   ]);
 });
 
-test("every id in Pat's loadout resolves to an SDK item", () => {
-  const ids = [...Object.values(patColosseumLoadout.equipment), ...patColosseumLoadout.inventory].filter(Boolean);
+test("every id in the V3 loadout resolves to an SDK item", () => {
+  const ids = [...Object.values(v3ColosseumLoadout.equipment), ...v3ColosseumLoadout.inventory].filter(Boolean);
   expect(ids.filter((id) => !LoadoutRegistry.has(id))).toEqual([]);
 });
 
-test("Pat's loadout is the default and upstream's stays available", () => {
+test("the V3 loadout is the default and upstream's stays available", () => {
   window.localStorage.clear();
   Settings.readFromStorage();
-  expect(Settings.loadout).toBe("Pat Colosseum");
+  expect(Settings.loadout).toBe("V3 Colosseum");
   expect(colosseumLoadout.name).toBe("Default");
 });
 ```
@@ -729,9 +729,9 @@ Run: `cd /c/dev/colosim/trainer && npx jest src/content/colosseum/tests/PatLoado
 
 Append to `ColosseumLoadout.ts`:
 ```ts
-/** Exact copy of the "Colosseum" Inventory Setup in Pat's RuneLite profile (2026-09-08). */
-export const patColosseumLoadout: Loadout = {
-  name: "Pat Colosseum",
+/** Exact copy of the "Colosseum" Inventory Setup in the reference RuneLite profile (2026-09-08). */
+export const v3ColosseumLoadout: Loadout = {
+  name: "V3 Colosseum",
   equipment: {
     weapon: CACHE_ASSETS.items.bloodAncientSceptre.id,
     offhand: null,
@@ -777,7 +777,7 @@ export const patColosseumLoadout: Loadout = {
   ],
 };
 ```
-In `ColosseumApp.tsx`: `const loadoutTemplates = [patColosseumLoadout, colosseumLoadout];` (import it). In the SDK `createDefaults()`: `loadout: "Pat Colosseum",`.
+In `ColosseumApp.tsx`: `const loadoutTemplates = [v3ColosseumLoadout, colosseumLoadout];` (import it). In the SDK `createDefaults()`: `loadout: "V3 Colosseum",`.
 
 - [ ] **Step 4: Rebuild the SDK link, run both suites**
 
@@ -787,8 +787,8 @@ Expected: PASS everywhere.
 - [ ] **Step 5: Commit both repos**
 
 ```bash
-cd /c/dev/colosim/osrs-sdk && git add src/sdk/Settings.ts src/sdk/index.ts && git commit -m "feat: default loadout is Pat Colosseum"
-cd /c/dev/colosim/trainer && git add src/content/colosseum/js/ColosseumLoadout.ts src/ColosseumApp.tsx src/content/colosseum/tests/PatLoadout.test.ts && git commit -m "feat: Pat Colosseum loadout from the RuneLite inventory setup"
+cd /c/dev/colosim/osrs-sdk && git add src/sdk/Settings.ts src/sdk/index.ts && git commit -m "feat: default loadout is V3 Colosseum"
+cd /c/dev/colosim/trainer && git add src/content/colosseum/js/ColosseumLoadout.ts src/ColosseumApp.tsx src/content/colosseum/tests/PatLoadout.test.ts && git commit -m "feat: V3 Colosseum loadout from the RuneLite inventory setup"
 ```
 
 ---
@@ -1087,9 +1087,9 @@ Using `mcp__chrome__browser_evaluate` and screenshots:
 
 - [ ] **Step 5: README and commit**
 
-Add to `trainer/README.md` a "Pat's fork" section: how to run `start.cmd`, the loadout source (RuneLite Inventory Setup "Colosseum"), the keybinds, and the "Model fallbacks" list from Step 2 (or "none").
+Add to `trainer/README.md` a "V3 fork" section: how to run `start.cmd`, the loadout source (RuneLite Inventory Setup "Colosseum"), the keybinds, and the "Model fallbacks" list from Step 2 (or "none").
 ```bash
-cd /c/dev/colosim/trainer && git add README.md && git commit -m "docs: Pat's fork local run and model fallbacks"
+cd /c/dev/colosim/trainer && git add README.md && git commit -m "docs: V3 fork local run and model fallbacks"
 ```
 
 ---
@@ -1097,19 +1097,19 @@ cd /c/dev/colosim/trainer && git add README.md && git commit -m "docs: Pat's for
 ### Task 9: Netlify deploy
 
 **Files:**
-- Modify: `C:\dev\colosim\trainer\netlify.toml` (add `[context.pat]` mirroring `[context.beta]` with the fork repo and branch)
+- Modify: `C:\dev\colosim\trainer\netlify.toml` (add `[context.v3]` mirroring `[context.beta]` with the fork repo and branch)
 
 - [ ] **Step 1: Add the branch context**
 
 Append to `netlify.toml`:
 ```toml
-[context.pat]
+[context.v3]
   command = "bash scripts/build-beta.sh"
   publish = "dist"
 
-[context.pat.environment]
+[context.v3.environment]
   OSRS_SDK_REPO = "https://github.com/tpgiv1995/osrs-sdk.git"
-  OSRS_SDK_BRANCH = "pat"
+  OSRS_SDK_BRANCH = "v3"
   OSRS_CACHE_READER_REPO = "https://github.com/Supalosa/osrscachereader.git"
   OSRS_CACHE_READER_BRANCH = "feat/reader-only-entrypoint"
   OSRS_OPENRS2_CACHE_ID = "2437"

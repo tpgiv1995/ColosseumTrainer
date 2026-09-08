@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   CacheRender,
   ControlPanelController,
-  PAT_PRAYER_LAYOUT,
+  V3_PRAYER_LAYOUT,
   Region,
   Settings,
   TileMarker,
@@ -12,7 +12,7 @@ import {
 import { DefaultSidebar, GameOverlay, LoadoutManager, TrainerApp, TrainerLoadingSplash, useSettingsSnapshot, useSettingsStore, useTrainerSnapshot } from "osrs-sdk-react";
 import { ColosseumRegion } from "./content/colosseum/js/ColosseumRegion";
 import { ModifierHud, SetupScreen } from "./SetupScreen";
-import { colosseumLoadout, patColosseumLoadout } from "./content/colosseum/js/ColosseumLoadout";
+import { colosseumLoadout, v3ColosseumLoadout } from "./content/colosseum/js/ColosseumLoadout";
 import {
   colosseumSettings,
   ColosseumSettingsState,
@@ -26,7 +26,7 @@ declare global {
   }
 }
 
-const loadoutTemplates = [patColosseumLoadout, colosseumLoadout];
+const loadoutTemplates = [v3ColosseumLoadout, colosseumLoadout];
 
 type TransferredSettings = {
   version: 1;
@@ -87,6 +87,10 @@ function createTrainer() {
       || "http://127.0.0.1:8081/manifest.json",
   );
   Settings.readFromStorage();
+  // Loadout was renamed on 2026-09-08; keep browsers that saved the old name on the same set.
+  if (Settings.loadout === "Pat Colosseum") {
+    Settings.set({ loadout: "V3 Colosseum", customLoadout: Settings.customLoadout ? { ...Settings.customLoadout, name: "V3 Colosseum" } : null });
+  }
   applyTransferredSettings();
   colosseumSettings.load();
 
@@ -239,9 +243,9 @@ function Sidebar({ onLoadoutToggle, region }: { onLoadoutToggle: () => void; reg
         <input
           type="checkbox"
           checked={settings.prayerLayout !== null}
-          onChange={(event) => Settings.set({ prayerLayout: event.currentTarget.checked ? [...PAT_PRAYER_LAYOUT] : null })}
+          onChange={(event) => Settings.set({ prayerLayout: event.currentTarget.checked ? [...V3_PRAYER_LAYOUT] : null })}
         />
-        Pat&apos;s prayer book layout
+        V3 prayer book layout
         <br />
       </label>
       <div>

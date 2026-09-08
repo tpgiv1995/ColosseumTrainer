@@ -1,11 +1,11 @@
 import "../../../../test/setupFiles";
 import { loadLoadoutRegistry, Settings } from "osrs-sdk";
-import { patColosseumLoadout, colosseumLoadout } from "../js/ColosseumLoadout";
+import { v3ColosseumLoadout, colosseumLoadout } from "../js/ColosseumLoadout";
 
-test("Pat's loadout mirrors the RuneLite Inventory Setup", () => {
-  expect(patColosseumLoadout.name).toBe("Pat Colosseum");
-  expect(patColosseumLoadout.inventory).toHaveLength(28);
-  expect(patColosseumLoadout.equipment).toEqual({
+test("the V3 loadout mirrors the RuneLite Inventory Setup", () => {
+  expect(v3ColosseumLoadout.name).toBe("V3 Colosseum");
+  expect(v3ColosseumLoadout.inventory).toHaveLength(28);
+  expect(v3ColosseumLoadout.equipment).toEqual({
     weapon: 28260,
     offhand: null,
     helmet: 29041,
@@ -18,7 +18,7 @@ test("Pat's loadout mirrors the RuneLite Inventory Setup", () => {
     gloves: 31106,
     ring: 25975,
   });
-  expect(patColosseumLoadout.inventory).toEqual([
+  expect(v3ColosseumLoadout.inventory).toEqual([
     12006, 7462, 25886, 27721, 12954, 33639, 27729, 27725,
     12695, 12695, 2444, 2444, 3024, 3024, 3024, 3024,
     3024, 3024, 10925, 6685, 6685, 6685, 6685, 27641,
@@ -26,15 +26,15 @@ test("Pat's loadout mirrors the RuneLite Inventory Setup", () => {
   ]);
 });
 
-test("every id in Pat's loadout resolves to an SDK item", async () => {
+test("every id in the V3 loadout resolves to an SDK item", async () => {
   const registry = await loadLoadoutRegistry();
-  const ids = [...Object.values(patColosseumLoadout.equipment), ...patColosseumLoadout.inventory].filter(Boolean);
+  const ids = [...Object.values(v3ColosseumLoadout.equipment), ...v3ColosseumLoadout.inventory].filter(Boolean);
   expect(ids.filter((id) => !registry.has(id))).toEqual([]);
 });
 
-test("Pat's loadout is the default and upstream's stays available", () => {
+test("the V3 loadout is the default and upstream's stays available", () => {
   window.localStorage.clear();
   Settings.readFromStorage();
-  expect(Settings.loadout).toBe("Pat Colosseum");
+  expect(Settings.loadout).toBe("V3 Colosseum");
   expect(colosseumLoadout.name).toBe("Default");
 });

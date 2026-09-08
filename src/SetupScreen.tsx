@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Settings, TrainerInstance, TrainerLoadingState, PAT_PRAYER_LAYOUT } from "osrs-sdk";
+import { Settings, TrainerInstance, TrainerLoadingState, V3_PRAYER_LAYOUT } from "osrs-sdk";
 import { useSettingsSnapshot, useSettingsStore } from "osrs-sdk-react";
 import { colosseumSettings, ColosseumSettingsState } from "./content/colosseum/js/ColosseumSettings";
 import { MODIFIER_LABELS, ModifierTier } from "./content/colosseum/js/ColosseumModifiers";
@@ -110,7 +110,8 @@ export function SetupScreen({ loading, onEditLoadout, onStart, region }: SetupSc
       style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.6)", zIndex: 7 }}
     >
       <div style={panel}>
-        <div style={{ fontSize: 30, color: "#ffffff", textAlign: "center", textShadow: "2px 2px #000" }}>Fight setup</div>
+        <div style={{ fontSize: 30, color: "#ffffff", textAlign: "center", textShadow: "2px 2px #000" }}>V3 Colosseum Sim</div>
+        <div style={{ textAlign: "center", color: "#aaa", fontSize: 14 }}>Fight setup</div>
 
         <div style={heading}>Loadout</div>
         <div style={row}>
@@ -118,9 +119,9 @@ export function SetupScreen({ loading, onEditLoadout, onStart, region }: SetupSc
           <button type="button" style={smallButton} onClick={onEditLoadout}>Edit loadout</button>
         </div>
         <Toggle
-          label="Pat's prayer book layout"
+          label="V3 prayer book layout"
           checked={settings.prayerLayout !== null}
-          onChange={(checked) => Settings.set({ prayerLayout: checked ? [...PAT_PRAYER_LAYOUT] : null })}
+          onChange={(checked) => Settings.set({ prayerLayout: checked ? [...V3_PRAYER_LAYOUT] : null })}
         />
 
         <div style={heading}>Keybinds</div>

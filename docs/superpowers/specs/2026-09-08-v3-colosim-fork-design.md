@@ -42,7 +42,7 @@ gear, his resizable-modern screen layout, and settings that survive a reset.
 
 ## 3. Gear (SDK content plus trainer loadout)
 
-Exact copy of the "Colosseum" Inventory Setup in Pat's RuneLite profile.
+Exact copy of the "Colosseum" Inventory Setup in the reference RuneLite profile.
 
 Equipment: Blue moon helm (29041), Fire cape (6570), Amulet of blood fury
 (24780), Blood ancient sceptre (28260), Blue moon chestplate (29037), Blue moon
@@ -64,7 +64,7 @@ Rules:
 - Iorwerth crystal recolours use the Iorwerth ids so the model matches.
 - Consumables without engine behaviour (Sanfew, ranging potion, saturated
   heart, rune pouch, blessing) are inert inventory items that render correctly.
-- The loadout is named "Pat Colosseum" and is the default loadout. Upstream's
+- The loadout is named "V3 Colosseum" and is the default loadout. Upstream's
   max-melee loadout stays available in the loadout picker.
 - If cache extraction cannot supply a model, the item falls back to the closest
   existing model and the fallback is listed in the trainer README.

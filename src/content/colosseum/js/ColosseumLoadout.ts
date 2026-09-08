@@ -48,9 +48,9 @@ export const colosseumLoadout: Loadout = {
   ],
 };
 
-/** Exact copy of the "Colosseum" Inventory Setup in Pat's RuneLite profile (2026-09-08). */
-export const patColosseumLoadout: Loadout = {
-  name: "Pat Colosseum",
+/** Exact copy of the "Colosseum" Inventory Setup in the reference RuneLite profile (2026-09-08). */
+export const v3ColosseumLoadout: Loadout = {
+  name: "V3 Colosseum",
   equipment: {
     weapon: CACHE_ASSETS.items.bloodAncientSceptre.id,
     offhand: null,

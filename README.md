@@ -78,9 +78,9 @@ Running test
 
     npx jest
 
-## Pat's fork
+## V3 fork
 
-This branch (`pat`) makes the trainer behave like Pat's RuneLite client. Design and
+This branch (`v3`) makes the trainer behave like the reference RuneLite client. Design and
 plan live in `docs/superpowers/`.
 
 - Run locally: `C:\dev\colosim\start.cmd` (cache-render assets on http://127.0.0.1:8081,
@@ -89,7 +89,7 @@ plan live in `docs/superpowers/`.
   "right click moves camera"). Middle-drag and scroll zoom still work.
 - Keybinds: F1 combat, F2 inventory, F3 prayer, F4 magic, F5 equipment. Pressing the
   open panel's key closes it. Rebinding in the sim settings panel still persists.
-- Gear: the "Pat Colosseum" loadout is copied from the RuneLite Inventory Setup named
+- Gear: the "V3 Colosseum" loadout is copied from the RuneLite Inventory Setup named
   "Colosseum" (Blue moon set, Blood ancient sceptre, Fire cape, Blood fury,
   Confliction gauntlets, Avernic treads (pr)(et), Lightbearer, Rada's blessing 4; the
   BowFa/crystal switch, Noxious halberd, Saradomin godsword, Burning claws and the
@@ -106,8 +106,8 @@ plan live in `docs/superpowers/`.
   casts unaffected); Blasphemy drains 20/40/60% of damage taken from prayer (rounded up);
   Relentless +1/+3/+6 to Sol's hits (its accuracy part is moot: Sol's hits already ignore
   Defence in the sim). Solar Flare is upstream's.
-- Prayer book: `Settings.prayerLayout` draws the book in Pat's RuneLite arrangement (30 slots,
-  hidden prayers blank). Untick "Pat's prayer book layout" for the stock order.
+- Prayer book: `Settings.prayerLayout` draws the book in the reference RuneLite arrangement (30 slots,
+  hidden prayers blank). Untick "V3 prayer book layout" for the stock order.
 - Model fallbacks: the pinned OpenRS2 cache (2437, revision 236) has no definition for
   the Necklace of rupture (33639), so it has a sprite and stats but no character mesh.
   Everything else in the loadout renders from the cache.
