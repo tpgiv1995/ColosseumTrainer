@@ -108,6 +108,15 @@ plan live in `docs/superpowers/`.
   Defence in the sim). Solar Flare is upstream's.
 - Prayer book: `Settings.prayerLayout` draws the book in the reference RuneLite arrangement (30 slots,
   hidden prayers blank). Untick "V3 prayer book layout" for the stock order.
+- Kit passives and specials implemented in the SDK fork: Saradomin godsword Healing Blade
+  (doubled accuracy, +10% max hit, heals 50% of damage min 10, restores 25% prayer min 5,
+  50% energy), Burning claws Burning barrage (35% energy, three hits from a 75-175% /
+  50-150% / 25-125% band by which accuracy roll lands, burns of 1 per 4 ticks for 40 ticks
+  up to five stacks), Blood fury (20% of damaging melee hits heal 30%), Lightbearer (special
+  energy every 25 ticks instead of 50). Blood ancient sceptre autocasts on the 5-tick spell
+  cycle and swings at 4 in melee.
+- Review: the branch was put through an adversarial Codex review on 2026-09-08; the
+  findings and fixes are in the commit history ("fix: review findings").
 - Model fallbacks: the pinned OpenRS2 cache (2437, revision 236) has no definition for
   the Necklace of rupture (33639), so it has a sprite and stats but no character mesh.
   Everything else in the loadout renders from the cache.
