@@ -107,3 +107,5 @@ typings/
 .tern-port
 
 .cache-render/
+# Local Netlify folder
+.netlify
