@@ -103,6 +103,12 @@ plan live in `docs/superpowers/`.
 - Fullscreen: on by default when Start fight is pressed (Esc leaves it), plus a toggle
   button top right in-game and in the setup screen. Browsers only allow fullscreen from a
   click, which is why it is tied to Start rather than page load.
+- Item choices: the loadout editor lists every equippable item, food and potion from the
+  RuneLite Bank Memory export of 2026-09-08 (491 generated items on top of the engine's own),
+  with a search box in each slot's picker. Stats come from the wiki; models from the cache.
+  Generated weapons have no special attacks, powered staves and non-ancient staves do not
+  cast, and a few stack icons fell back to a blank sprite. The generator lives in the SDK
+  fork under `scripts/bank-items/`.
 - Loadout edits made in the setup screen's editor are saved in the browser (the engine's
   `customLoadout` setting) and reapplied on every Start and Try again.
 - Practice mode caps each of Sol's hits at 1-2 so more of his rotation can be seen.
