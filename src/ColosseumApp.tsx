@@ -207,6 +207,15 @@ export function ColosseumApp() {
       onLoadingStateChange={setLoading}
     >
       <GameOverlay>
+        <button
+          type="button"
+          aria-label="Toggle trainer settings"
+          title="Trainer settings"
+          onClick={() => Settings.setMenuVisible(!Settings.menuVisible)}
+          style={{ position: "absolute", top: 4, right: 4, width: 36, padding: "4px 0", zIndex: 5, opacity: 0.8 }}
+        >
+          &#9881;
+        </button>
         <div id="disclaimer_panel">Work in progress.<br />All assets are property of Jagex.</div>
         <TrainerLoadingSplash state={loading} />
         <LoadoutManager
