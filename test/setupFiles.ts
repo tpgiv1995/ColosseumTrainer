@@ -37,6 +37,20 @@ global.OffscreenCanvas = jest.fn().mockImplementation((width: number, height: nu
   };
 });
 
+// The cache-render SDK mounts a ResizeObserver on the play area; jsdom has none.
+Object.defineProperty(globalThis, "ResizeObserver", {
+  configurable: true,
+  value: class ResizeObserverMock {
+    constructor(private readonly callback: (entries: Array<{ contentRect: { width: number; height: number } }>) => void) {}
+
+    observe() {
+      this.callback([{ contentRect: { width: window.innerWidth, height: window.innerHeight } }]);
+    }
+
+    disconnect() {}
+  },
+});
+
 jest.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(() => canvasContext as any);
 
 global.fetch = jest.fn().mockImplementation(() => ({
