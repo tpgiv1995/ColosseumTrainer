@@ -48,6 +48,54 @@ export const colosseumLoadout: Loadout = {
   ],
 };
 
+/** Exact copy of the "Colosseum" Inventory Setup in Pat's RuneLite profile (2026-09-08). */
+export const patColosseumLoadout: Loadout = {
+  name: "Pat Colosseum",
+  equipment: {
+    weapon: CACHE_ASSETS.items.bloodAncientSceptre.id,
+    offhand: null,
+    helmet: CACHE_ASSETS.items.blueMoonHelm.id,
+    necklace: CACHE_ASSETS.items.amuletOfBloodFury.id,
+    cape: CACHE_ASSETS.items.fireCape.id,
+    ammo: CACHE_ASSETS.items.radasBlessing4.id,
+    chest: CACHE_ASSETS.items.blueMoonChestplate.id,
+    legs: CACHE_ASSETS.items.blueMoonTassets.id,
+    feet: CACHE_ASSETS.items.avernicTreadsPrEt.id,
+    gloves: CACHE_ASSETS.items.conflictionGauntlets.id,
+    ring: CACHE_ASSETS.items.lightbearer.id,
+  },
+  inventory: [
+    CACHE_ASSETS.items.abyssalTentacle.id,
+    CACHE_ASSETS.items.barrowsGloves.id,
+    CACHE_ASSETS.items.bowOfFaerdhinenIorwerth.id,
+    CACHE_ASSETS.items.crystalBodyIorwerth.id,
+    CACHE_ASSETS.items.dragonDefender.id,
+    CACHE_ASSETS.items.necklaceOfRupture.id,
+    CACHE_ASSETS.items.crystalHelmIorwerth.id,
+    CACHE_ASSETS.items.crystalLegsIorwerth.id,
+    CACHE_ASSETS.items.superCombatPotion.id,
+    CACHE_ASSETS.items.superCombatPotion.id,
+    CACHE_ASSETS.items.rangingPotion.id,
+    CACHE_ASSETS.items.rangingPotion.id,
+    CACHE_ASSETS.items.superRestore.id,
+    CACHE_ASSETS.items.superRestore.id,
+    CACHE_ASSETS.items.superRestore.id,
+    CACHE_ASSETS.items.superRestore.id,
+    CACHE_ASSETS.items.superRestore.id,
+    CACHE_ASSETS.items.superRestore.id,
+    CACHE_ASSETS.items.sanfewSerum.id,
+    CACHE_ASSETS.items.saradominBrew.id,
+    CACHE_ASSETS.items.saradominBrew.id,
+    CACHE_ASSETS.items.saradominBrew.id,
+    CACHE_ASSETS.items.saradominBrew.id,
+    CACHE_ASSETS.items.saturatedHeart.id,
+    CACHE_ASSETS.items.noxiousHalberd.id,
+    CACHE_ASSETS.items.saradominGodsword.id,
+    CACHE_ASSETS.items.burningClaws.id,
+    CACHE_ASSETS.items.divineRunePouch.id,
+  ],
+};
+
 /** Apply the Colosseum's fixed player stats and starting boost after Region.reset(). */
 export function configureColosseumPlayer(player: Player) {
   player.stats.prayer = 93;

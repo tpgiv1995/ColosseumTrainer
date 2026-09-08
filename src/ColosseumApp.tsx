@@ -10,7 +10,7 @@ import {
 } from "osrs-sdk";
 import { DefaultSidebar, GameOverlay, LoadoutManager, TrainerApp, TrainerLoadingSplash, useSettingsSnapshot, useSettingsStore } from "osrs-sdk-react";
 import { ColosseumRegion } from "./content/colosseum/js/ColosseumRegion";
-import { colosseumLoadout } from "./content/colosseum/js/ColosseumLoadout";
+import { colosseumLoadout, patColosseumLoadout } from "./content/colosseum/js/ColosseumLoadout";
 import {
   colosseumSettings,
   ColosseumSettingsState,
@@ -24,7 +24,7 @@ declare global {
   }
 }
 
-const loadoutTemplates = [colosseumLoadout];
+const loadoutTemplates = [patColosseumLoadout, colosseumLoadout];
 
 type TransferredSettings = {
   version: 1;
