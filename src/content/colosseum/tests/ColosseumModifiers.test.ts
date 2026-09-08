@@ -7,12 +7,14 @@ import {
   clampOverheal,
   ColosseumModifierState,
   DOOM_STACK_LIMIT,
+  relentlessMaxHitBonus,
 } from "../js/ColosseumModifiers";
+import { SolGroundSlam } from "../js/entities/SolGroundSlam";
 
 const OFF: ColosseumModifierState = { practiceMode: false, doom: 0, frailty: 0, myopia: 0, blasphemy: 0, relentless: 0 };
 
 function setup() {
-  const region = new TestRegion(30, 30);
+  const region = new TestRegion(30, 30) as TestRegion & { modifiers?: ReturnType<typeof applyColosseumModifiers> };
   const world = new World();
   region.world = world;
   world.addRegion(region);
@@ -42,11 +44,15 @@ describe("practice mode and modifiers", () => {
     expect(player.currentStats.hitpoint).toBeLessThanOrEqual(99 - 10);
   });
 
-  test("practice mode leaves self-inflicted and zero hits alone", () => {
+  test("practice mode leaves zero hits alone and caps player-sourced hazards", () => {
     const { player, boss } = setup();
     applyColosseumModifiers(player, { ...OFF, practiceMode: true });
     solHits(player, boss, 0);
     expect(player.currentStats.hitpoint).toBe(99);
+    // Lasers and sand pools are built as player-to-player typeless projectiles.
+    player.addProjectile(new Projectile(null, 70, player, player, "typeless", { setDelay: 0 }));
+    player.attackStep();
+    expect(player.currentStats.hitpoint).toBeGreaterThanOrEqual(97);
   });
 
   test("doom kills at the tier's stack limit", () => {
@@ -58,6 +64,18 @@ describe("practice mode and modifiers", () => {
     solHits(player, boss, 5);
     expect(tracker.doomStacks).toBe(5);
     expect(player.currentStats.hitpoint).toBe(0);
+    expect(player.isDying()).toBe(true);
+  });
+
+  test("doom's death cannot be undone by healing queued on the same tick", () => {
+    const { player, boss } = setup();
+    applyColosseumModifiers(player, { ...OFF, doom: 3 });
+    for (let i = 0; i < DOOM_STACK_LIMIT[3]; i++) {
+      player.addProjectile(new Projectile(new MeleeWeapon(), 1, boss, player, "stab", { hidden: true, setDelay: 0 }));
+    }
+    player.addProjectile(new Projectile(null, -20, player, player, "heal", { setDelay: 0 }));
+    player.attackStep();
+    expect(player.isDying()).toBe(true);
   });
 
   test("frailty lowers max hitpoints and blocks overheal", () => {
@@ -85,11 +103,25 @@ describe("practice mode and modifiers", () => {
     expect(player.currentStats.prayer).toBe(93 - 4);
   });
 
-  test("relentless adds to Sol's hit", () => {
-    const { player, boss } = setup();
-    applyColosseumModifiers(player, { ...OFF, relentless: 2 });
+  test("relentless raises Sol's max hit at roll time, not every hit", () => {
+    const { region, player, boss } = setup();
+    region.modifiers = applyColosseumModifiers(player, { ...OFF, relentless: 3 });
+    expect(relentlessMaxHitBonus(region)).toBe(6);
+    // A plain fixed hit is unchanged by the modifier pipeline.
     solHits(player, boss, 10);
-    expect(player.currentStats.hitpoint).toBe(99 - 13);
+    expect(player.currentStats.hitpoint).toBe(89);
+    // The ground slam roll spans 20..(44 + 6).
+    const seen: number[] = [];
+    for (let i = 0; i < 400; i++) {
+      const slam = new SolGroundSlam(region, { x: 15, y: 15 }, boss, player, 0, 0);
+      player.currentStats.hitpoint = 99;
+      slam.weapon.attack(boss, player, { attackStyle: "crush" });
+      player.attackStep();
+      seen.push(99 - player.currentStats.hitpoint);
+    }
+    expect(Math.max.apply(null, seen)).toBeGreaterThan(44);
+    expect(Math.max.apply(null, seen)).toBeLessThanOrEqual(50);
+    expect(Math.min.apply(null, seen)).toBeGreaterThanOrEqual(20);
   });
 
   test("tracker HUD text names what is on", () => {

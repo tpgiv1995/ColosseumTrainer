@@ -1,6 +1,7 @@
 "use strict";
 
 import { Weapon, Unit, AttackBonuses, ProjectileOptions, Random, Projectile, Entity, Region, CollisionType, LineOfSightMask, Location, CacheRenderInstancedModel, CacheRenderReferences } from "osrs-sdk";
+import { relentlessMaxHitBonus } from "../ColosseumModifiers";
 
 class SolGroundSlamWeapon extends Weapon {
   calculateHitDelay(distance: number) {
@@ -12,8 +13,8 @@ class SolGroundSlamWeapon extends Weapon {
   }
 
   attack(from: Unit, to: Unit, bonuses: AttackBonuses = {}, options: ProjectileOptions = {}): boolean {
-    // up to 45? not sure what min hit is
-    this.damage = 20 + Math.floor(Random.get() * 25);
+    // up to 45? not sure what min hit is. Relentless raises the top of the roll.
+    this.damage = 20 + Math.floor(Random.get() * (25 + relentlessMaxHitBonus(from.region)));
     to.addProjectile(new Projectile(this, this.damage, from, to, bonuses.attackStyle, options));
     return true;
   }

@@ -31,35 +31,38 @@ const row: React.CSSProperties = { display: "flex", alignItems: "center", justif
 const select: React.CSSProperties = { width: 260, padding: "4px 0", fontSize: 14, margin: 0 };
 const smallButton: React.CSSProperties = { width: "auto", padding: "4px 12px", fontSize: 14, margin: 0 };
 
-/** Click, then press a key; the sim ignores panel hotkeys while capturing. */
-function KeyCapture({ field, label }: { field: KeyField; label: string }) {
+/** Click, then press a key. Only one field captures at a time; the sim ignores panel hotkeys meanwhile. */
+function KeyCapture({ field, label, capturing, onCapture }: { field: KeyField; label: string; capturing: boolean; onCapture: (field: KeyField | null) => void }) {
   const settings = useSettingsSnapshot();
-  const [capturing, setCapturing] = useState(false);
+  return (
+    <div style={row}>
+      <span>{label}</span>
+      <button type="button" style={{ ...smallButton, width: 120 }} onClick={() => onCapture(capturing ? null : field)}>
+        {capturing ? "Press a key..." : settings[field]}
+      </button>
+    </div>
+  );
+}
 
+/** Installs the single window listener for whichever field is capturing. */
+function useKeyCapture() {
+  const [capturingField, setCapturingField] = useState<KeyField | null>(null);
   useEffect(() => {
-    if (!capturing) return;
+    if (!capturingField) return;
     Settings.is_keybinding = true;
     const onKey = (event: KeyboardEvent) => {
       event.preventDefault();
       event.stopPropagation();
-      if (event.key !== "Escape") Settings.set({ [field]: event.key } as Partial<Record<KeyField, string>>);
-      setCapturing(false);
+      if (event.key !== "Escape") Settings.set({ [capturingField]: event.key } as Partial<Record<KeyField, string>>);
+      setCapturingField(null);
     };
     window.addEventListener("keydown", onKey, true);
     return () => {
       window.removeEventListener("keydown", onKey, true);
       Settings.is_keybinding = false;
     };
-  }, [capturing, field]);
-
-  return (
-    <div style={row}>
-      <span>{label}</span>
-      <button type="button" style={{ ...smallButton, width: 120 }} onClick={() => setCapturing(true)}>
-        {capturing ? "Press a key..." : settings[field]}
-      </button>
-    </div>
-  );
+  }, [capturingField]);
+  return { capturingField, setCapturingField };
 }
 
 function TierSelect({ id }: { id: keyof typeof MODIFIER_LABELS }) {
@@ -104,6 +107,7 @@ export function SetupScreen({ loading, onEditLoadout, onStart, region }: SetupSc
   const settings = useSettingsSnapshot();
   const colosseum = useSettingsStore(colosseumSettings);
   const ready = loading?.status === "ready";
+  const { capturingField, setCapturingField } = useKeyCapture();
 
   return (
     <div
@@ -126,7 +130,7 @@ export function SetupScreen({ loading, onEditLoadout, onStart, region }: SetupSc
 
         <div style={heading}>Keybinds</div>
         {KEY_FIELDS.map(({ field, label }) => (
-          <KeyCapture key={field} field={field} label={label} />
+          <KeyCapture key={field} field={field} label={label} capturing={capturingField === field} onCapture={setCapturingField} />
         ))}
 
         <div style={heading}>Camera</div>

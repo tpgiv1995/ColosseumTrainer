@@ -128,7 +128,8 @@ function DeathOverlay({ trainer }: { trainer: TrainerInstance }) {
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        trainer.reset();
+        // The focused button may also fire a click; only the first restart does anything.
+        if (trainer.getSnapshot().playerDead) trainer.reset();
       }
     };
     document.addEventListener("keydown", onKey);
@@ -339,7 +340,11 @@ export function ColosseumApp() {
         <LoadoutManager
           loadouts={loadoutTemplates}
           open={loadoutOpen}
-          onClose={() => setLoadoutOpen(false)}
+          onClose={() => {
+            setLoadoutOpen(false);
+            // The editor resets (and starts) the world on close; keep it parked while setup is open.
+            if (setupOpen) trainer.stop();
+          }}
         />
       </GameOverlay>
       <DefaultSidebar>

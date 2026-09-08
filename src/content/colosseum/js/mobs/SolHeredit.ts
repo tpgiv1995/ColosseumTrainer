@@ -27,6 +27,7 @@ import {
 } from "osrs-sdk";
 
 import { SolGroundSlam } from "../entities/SolGroundSlam";
+import { relentlessMaxHitBonus } from "../ColosseumModifiers";
 import { colosseumSettings } from "../ColosseumSettings";
 import TripleParry1 from "../../assets/sounds/8140_triple_parry_1.ogg";
 import TripleParry2 from "../../assets/sounds/8171_triple_parry_2.ogg";
@@ -752,7 +753,7 @@ export class SolHeredit extends Mob {
         this.aggro?.addProjectile(
           new Projectile(
             new ParryUnblockableWeapon(),
-            didParry ? 0 : 20 + Math.floor(Random.get() * 25),
+            didParry ? 0 : 20 + Math.floor(Random.get() * (25 + relentlessMaxHitBonus(this.region))),
             this,
             this.aggro,
             "stab",
@@ -810,7 +811,7 @@ export class SolHeredit extends Mob {
     this.aggro?.addProjectile(
       new Projectile(
         new MeleeWeapon(),
-        damage,
+        damage + relentlessMaxHitBonus(this.region),
         this,
         this.aggro,
         "stab",

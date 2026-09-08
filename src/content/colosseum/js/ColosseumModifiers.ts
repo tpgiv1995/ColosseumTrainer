@@ -1,4 +1,4 @@
-import type { Player, Projectile } from "osrs-sdk";
+import type { Player, Projectile, Region } from "osrs-sdk";
 import { Random } from "osrs-sdk";
 
 /** 0 = off, 1..3 = tier I..III. */
@@ -23,8 +23,14 @@ export const FRAILTY_HP_REDUCTION = [0, 0.1, 0.2, 0.4];
 export const MYOPIA_RANGE_PENALTY = [0, 2, 4, 6];
 /** Blasphemy: prayer points drained by this fraction of damage taken. */
 export const BLASPHEMY_DRAIN = [0, 0.2, 0.4, 0.6];
-/** Relentless: enemy max hits increased by this much (the accuracy part is a no-op here: Sol's hits already skip accuracy). */
+/** Relentless: Sol's max hits increased by this much at roll time (the accuracy part is a no-op here: Sol's hits already skip accuracy). */
 export const RELENTLESS_MAX_HIT_BONUS = [0, 1, 3, 6];
+
+/** Extra max hit for Sol's own attacks in this region (0 when Relentless is off). */
+export function relentlessMaxHitBonus(region: Region | null | undefined): number {
+  const tracker = (region as { modifiers?: ColosseumModifierTracker | null } | null | undefined)?.modifiers;
+  return tracker ? RELENTLESS_MAX_HIT_BONUS[tracker.state.relentless] : 0;
+}
 
 export const PRACTICE_MAX_HIT = 2;
 
@@ -59,13 +65,17 @@ export class ColosseumModifierTracker {
   }
 }
 
-function isEnemyHit(projectile: Projectile, player: Player) {
-  return projectile.damage > 0 && projectile.from !== player;
+/**
+ * Every damaging hit counts. Sol's lasers, sand pools and solar flares are built as
+ * player-to-player projectiles, and nothing in this sim is truly self-inflicted.
+ */
+function isEnemyHit(projectile: Projectile, _player: Player) {
+  return projectile.damage > 0;
 }
 
 /**
  * Wires the chosen modifiers and practice mode onto a freshly reset player.
- * Order matters: Relentless raises the hit, then practice mode caps it.
+ * Relentless is applied where Sol rolls damage (see relentlessMaxHitBonus).
  */
 export function applyColosseumModifiers(player: Player, state: ColosseumModifierState): ColosseumModifierTracker {
   const tracker = new ColosseumModifierTracker(state);
@@ -80,11 +90,6 @@ export function applyColosseumModifiers(player: Player, state: ColosseumModifier
     player.currentStats.hitpoint = Math.min(player.currentStats.hitpoint, reduced);
   }
 
-  if (state.relentless) {
-    const bonus = RELENTLESS_MAX_HIT_BONUS[state.relentless];
-    player.incomingDamageModifiers.push((damage, projectile) => (isEnemyHit(projectile, player) ? damage + bonus : damage));
-  }
-
   if (state.practiceMode) {
     player.incomingDamageModifiers.push((damage, projectile) =>
       isEnemyHit(projectile, player) ? Math.min(damage, 1 + Math.floor(Random.get() * PRACTICE_MAX_HIT)) : damage,
@@ -96,7 +101,9 @@ export function applyColosseumModifiers(player: Player, state: ColosseumModifier
       if (damage <= 0) return;
       tracker.doomStacks++;
       if (tracker.doomStacks >= tracker.doomLimit) {
+        // Die now, so food queued on the same tick cannot undo it.
         player.currentStats.hitpoint = 0;
+        player.detectDeath();
       }
     });
   }
