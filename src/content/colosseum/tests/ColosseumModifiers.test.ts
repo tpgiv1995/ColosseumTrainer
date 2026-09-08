@@ -10,6 +10,7 @@ import {
   relentlessMaxHitBonus,
 } from "../js/ColosseumModifiers";
 import { SolGroundSlam } from "../js/entities/SolGroundSlam";
+import { colosseumSettings } from "../js/ColosseumSettings";
 
 const OFF: ColosseumModifierState = { practiceMode: false, doom: 0, frailty: 0, myopia: 0, blasphemy: 0, relentless: 0 };
 
@@ -131,4 +132,13 @@ describe("practice mode and modifiers", () => {
     expect(tracker.hudText()).toContain("Doom 0/15");
     expect(applyColosseumModifiers(player, OFF).hudText()).toBeNull();
   });
+});
+
+test("fullscreen on start is the default and persists", () => {
+  window.localStorage.removeItem("colosseum-trainer:settings");
+  colosseumSettings.load();
+  expect(colosseumSettings.getSnapshot().fullscreenOnStart).toBe(true);
+  colosseumSettings.set({ fullscreenOnStart: false });
+  colosseumSettings.load();
+  expect(colosseumSettings.getSnapshot().fullscreenOnStart).toBe(false);
 });

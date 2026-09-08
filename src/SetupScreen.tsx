@@ -5,6 +5,17 @@ import { colosseumSettings, ColosseumSettingsState } from "./content/colosseum/j
 import { MODIFIER_LABELS, ModifierTier } from "./content/colosseum/js/ColosseumModifiers";
 import type { ColosseumRegion } from "./content/colosseum/js/ColosseumRegion";
 
+/** Browser fullscreen (hides tabs and the taskbar); must be called from a user gesture. */
+export async function toggleFullscreen(force?: boolean) {
+  const wantFullscreen = force ?? !document.fullscreenElement;
+  try {
+    if (wantFullscreen && !document.fullscreenElement) await document.documentElement.requestFullscreen();
+    else if (!wantFullscreen && document.fullscreenElement) await document.exitFullscreen();
+  } catch {
+    // The browser refused (no gesture, iframe rules); the F11 key still works.
+  }
+}
+
 type KeyField = "combat_key" | "inventory_key" | "prayer_key" | "spellbook_key" | "equipment_key";
 const KEY_FIELDS: { field: KeyField; label: string }[] = [
   { field: "combat_key", label: "Combat" },
@@ -145,6 +156,17 @@ export function SetupScreen({ loading, onEditLoadout, onStart, region }: SetupSc
             value={settings.cameraSensitivity}
             onChange={(event) => Settings.set({ cameraSensitivity: Number(event.currentTarget.value) })}
           />
+        </div>
+
+        <div style={heading}>Display</div>
+        <Toggle
+          label="Fullscreen when the fight starts (Esc leaves)"
+          checked={colosseum.fullscreenOnStart}
+          onChange={(checked) => colosseumSettings.set({ fullscreenOnStart: checked })}
+        />
+        <div style={row}>
+          <span>Fullscreen now</span>
+          <button type="button" style={smallButton} onClick={() => void toggleFullscreen()}>Toggle fullscreen</button>
         </div>
 
         <div style={heading}>Practice</div>

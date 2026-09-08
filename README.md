@@ -100,6 +100,11 @@ plan live in `docs/superpowers/`.
   practice mode, modifiers, Sol's attack toggles). Start applies everything with a fresh
   reset; the in-game Setup button (top right) reopens it. Dying shows a Try again overlay
   (Enter also restarts) that keeps every setting.
+- Fullscreen: on by default when Start fight is pressed (Esc leaves it), plus a toggle
+  button top right in-game and in the setup screen. Browsers only allow fullscreen from a
+  click, which is why it is tied to Start rather than page load.
+- Loadout edits made in the setup screen's editor are saved in the browser (the engine's
+  `customLoadout` setting) and reapplied on every Start and Try again.
 - Practice mode caps each of Sol's hits at 1-2 so more of his rotation can be seen.
 - Modifiers (numbers from the wiki modifiers page): Doom dies at 15/10/5 stacks, one stack per
   damaging hit; Frailty -10/20/40% max HP and no overheal; Myopia -2/4/6 attack range (manual

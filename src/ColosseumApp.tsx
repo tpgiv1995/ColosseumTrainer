@@ -11,7 +11,7 @@ import {
 } from "osrs-sdk";
 import { DefaultSidebar, GameOverlay, LoadoutManager, TrainerApp, TrainerLoadingSplash, useSettingsSnapshot, useSettingsStore, useTrainerSnapshot } from "osrs-sdk-react";
 import { ColosseumRegion } from "./content/colosseum/js/ColosseumRegion";
-import { ModifierHud, SetupScreen } from "./SetupScreen";
+import { ModifierHud, SetupScreen, toggleFullscreen } from "./SetupScreen";
 import { colosseumLoadout, v3ColosseumLoadout } from "./content/colosseum/js/ColosseumLoadout";
 import {
   colosseumSettings,
@@ -291,6 +291,8 @@ export function ColosseumApp() {
   const region = trainer.region as ColosseumRegion;
 
   const startFight = () => {
+    // Runs inside the Start click, which is the user gesture fullscreen needs.
+    if (colosseumSettings.getSnapshot().fullscreenOnStart) void toggleFullscreen(true);
     setSetupOpen(false);
     setLoadoutOpen(false);
     trainer.reset();
@@ -323,6 +325,15 @@ export function ColosseumApp() {
           style={{ position: "absolute", top: 4, right: 44, width: 70, padding: "4px 0", zIndex: 5, opacity: 0.8, fontSize: 14 }}
         >
           Setup
+        </button>
+        <button
+          type="button"
+          title="Toggle fullscreen"
+          aria-label="Toggle fullscreen"
+          onClick={() => void toggleFullscreen()}
+          style={{ position: "absolute", top: 4, right: 118, width: 36, padding: "4px 0", zIndex: 5, opacity: 0.8 }}
+        >
+          &#x26F6;
         </button>
         <ModifierHud region={region} />
         <div id="disclaimer_panel">Work in progress.<br />All assets are property of Jagex.</div>

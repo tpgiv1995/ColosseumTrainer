@@ -16,6 +16,8 @@ export type ColosseumSettingsState = {
   myopia: ModifierTier;
   blasphemy: ModifierTier;
   relentless: ModifierTier;
+  /** Ask the browser for fullscreen when Start fight is pressed. */
+  fullscreenOnStart: boolean;
   showSolarFlareTiles: boolean;
   solarFlareLevel: number;
   useGrapple: boolean;
@@ -28,6 +30,7 @@ export type ColosseumSettingsState = {
 const STORAGE_KEY = "colosseum-trainer:settings";
 const defaults: ColosseumSettingsState = {
   practiceMode: false,
+  fullscreenOnStart: true,
   doom: 0,
   frailty: 0,
   myopia: 0,
