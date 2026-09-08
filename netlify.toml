@@ -19,3 +19,17 @@
   OSRS_OPENRS2_CACHE_ID = "2437"
   OSRS_ASSET_BASE_URL = "https://assets-soltrainer.netlify.app"
   OSRS_CACHE_RENDER_MANIFEST_URL = "/cache-render/manifest.json"
+
+# Pat's fork: same build as beta, but against the fork's SDK branch.
+[context.pat]
+  command = "bash scripts/build-beta.sh"
+  publish = "dist"
+
+[context.pat.environment]
+  OSRS_SDK_REPO = "https://github.com/tpgiv1995/osrs-sdk.git"
+  OSRS_SDK_BRANCH = "pat"
+  OSRS_CACHE_READER_REPO = "https://github.com/Supalosa/osrscachereader.git"
+  OSRS_CACHE_READER_BRANCH = "feat/reader-only-entrypoint"
+  OSRS_OPENRS2_CACHE_ID = "2437"
+  OSRS_ASSET_BASE_URL = "https://assets-soltrainer.netlify.app"
+  OSRS_CACHE_RENDER_MANIFEST_URL = "/cache-render/manifest.json"
