@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   CacheRender,
   ControlPanelController,
+  PAT_PRAYER_LAYOUT,
   Region,
   Settings,
   TileMarker,
@@ -233,6 +234,15 @@ function Sidebar({ onLoadoutToggle, region }: { onLoadoutToggle: () => void; reg
       <button type="button" onClick={onLoadoutToggle}>Loadout</button>
       <hr />
       <span>More settings:</span>
+      <label>
+        <input
+          type="checkbox"
+          checked={settings.prayerLayout !== null}
+          onChange={(event) => Settings.set({ prayerLayout: event.currentTarget.checked ? [...PAT_PRAYER_LAYOUT] : null })}
+        />
+        Pat&apos;s prayer book layout
+        <br />
+      </label>
       <div>
         <label htmlFor="cameraSensitivity">Camera sensitivity: {Math.round(settings.cameraSensitivity * 100)}%</label>
         <input
