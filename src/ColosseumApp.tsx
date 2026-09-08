@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   CacheRender,
   ControlPanelController,
@@ -8,7 +8,7 @@ import {
   TrainerInstance,
   TrainerLoadingState,
 } from "osrs-sdk";
-import { DefaultSidebar, GameOverlay, LoadoutManager, TrainerApp, TrainerLoadingSplash, useSettingsSnapshot, useSettingsStore } from "osrs-sdk-react";
+import { DefaultSidebar, GameOverlay, LoadoutManager, TrainerApp, TrainerLoadingSplash, useSettingsSnapshot, useSettingsStore, useTrainerSnapshot } from "osrs-sdk-react";
 import { ColosseumRegion } from "./content/colosseum/js/ColosseumRegion";
 import { colosseumLoadout, patColosseumLoadout } from "./content/colosseum/js/ColosseumLoadout";
 import {
@@ -113,6 +113,62 @@ function AttackCheckbox({ label, setting }: { label: string; setting: AttackSett
   );
 }
 
+/** Shown when the player dies: one big button (or Enter) restarts the fight. Settings are untouched. */
+function DeathOverlay({ trainer }: { trainer: TrainerInstance }) {
+  const playerDead = useTrainerSnapshot((snapshot) => snapshot.playerDead);
+
+  useEffect(() => {
+    if (!playerDead) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        trainer.reset();
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [playerDead, trainer]);
+
+  if (!playerDead) return null;
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "rgba(0, 0, 0, 0.45)",
+        zIndex: 6,
+      }}
+    >
+      <div
+        style={{
+          background: "#2b2620",
+          border: "3px solid #5c4a2a",
+          borderRadius: 6,
+          padding: "22px 34px",
+          textAlign: "center",
+          color: "#ff981f",
+          fontFamily: "OSRS",
+          boxShadow: "0 0 24px #000",
+        }}
+      >
+        <div style={{ fontSize: 34, color: "#ff3333", textShadow: "2px 2px #000" }}>Oh dear, you are dead!</div>
+        <div style={{ fontSize: 16, color: "#ffffff", margin: "10px 0 18px" }}>Same gear, same keybinds, same settings.</div>
+        <button
+          type="button"
+          autoFocus
+          onClick={() => trainer.reset()}
+          style={{ width: 260, fontSize: 22, padding: "12px 0", border: "2px solid #ff981f", color: "#ff981f" }}
+        >
+          Try again (Enter)
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function Credits() {
   return (
     <ul>
@@ -178,6 +234,19 @@ function Sidebar({ onLoadoutToggle, region }: { onLoadoutToggle: () => void; reg
       <hr />
       <span>More settings:</span>
       <div>
+        <label htmlFor="cameraSensitivity">Camera sensitivity: {Math.round(settings.cameraSensitivity * 100)}%</label>
+        <input
+          id="cameraSensitivity"
+          type="range"
+          min={0.2}
+          max={1.5}
+          step={0.05}
+          value={settings.cameraSensitivity}
+          style={{ width: "100%" }}
+          onChange={(event) => Settings.set({ cameraSensitivity: Number(event.currentTarget.value) })}
+        />
+      </div>
+      <div>
         <input
           id="tileMarkerColor"
           type="color"
@@ -199,6 +268,8 @@ function Sidebar({ onLoadoutToggle, region }: { onLoadoutToggle: () => void; reg
 export function ColosseumApp() {
   const [trainer] = useState(createTrainer);
   const [loading, setLoading] = useState<TrainerLoadingState>();
+  // Handy for driving the sim from devtools or automated checks.
+  (window as unknown as { colosimTrainer?: TrainerInstance }).colosimTrainer = trainer;
   const [loadoutOpen, setLoadoutOpen] = useState(false);
 
   return (
@@ -218,6 +289,7 @@ export function ColosseumApp() {
         </button>
         <div id="disclaimer_panel">Work in progress.<br />All assets are property of Jagex.</div>
         <TrainerLoadingSplash state={loading} />
+        <DeathOverlay trainer={trainer} />
         <LoadoutManager
           loadouts={loadoutTemplates}
           open={loadoutOpen}
