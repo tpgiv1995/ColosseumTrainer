@@ -77,3 +77,33 @@ after cloning.
 Running test
 
     npx jest
+
+## Pat's fork
+
+This branch (`pat`) makes the trainer behave like Pat's RuneLite client. Design and
+plan live in `docs/superpowers/`.
+
+- Run locally: `C:\dev\colosim\start.cmd` (cache-render assets on http://127.0.0.1:8081,
+  trainer on http://localhost:8000). The SDK fork is linked with `npm run link:sdk`.
+- Camera: right-drag rotates, a stationary right click opens the menu (RuneLite
+  "right click moves camera"). Middle-drag and scroll zoom still work.
+- Keybinds: F1 combat, F2 inventory, F3 prayer, F4 magic, F5 equipment. Pressing the
+  open panel's key closes it. Rebinding in the sim settings panel still persists.
+- Gear: the "Pat Colosseum" loadout is copied from the RuneLite Inventory Setup named
+  "Colosseum" (Blue moon set, Blood ancient sceptre, Fire cape, Blood fury,
+  Confliction gauntlets, Avernic treads (pr)(et), Lightbearer, Rada's blessing 4; the
+  BowFa/crystal switch, Noxious halberd, Saradomin godsword, Burning claws and the
+  potions in the inventory). Prayer level is 93.
+- Layout: `modernLayout` setting (on by default) draws one bottom tab row, a larger
+  panel, and a visual-only chat strip. The site sidebar hides behind the gear button.
+- Model fallbacks: the pinned OpenRS2 cache (2437, revision 236) has no definition for
+  the Necklace of rupture (33639), so it has a sprite and stats but no character mesh.
+  Everything else in the loadout renders from the cache.
+- Tests: the SDK fork's jest suite is fully green. This repo's SolAttack suite has
+  18 failures inherited from upstream drift between the beta tests and the
+  cache-render SDK branch; they fail identically without the fork's changes.
+- Windows: `npm run assets` cannot spawn `tsx.cmd` on Node 24. Run the extractor
+  directly: `OSRS_CACHE_REVISION=236 OSRS_CACHE_SOURCE=openrs2:2437 npx tsx
+  scripts/cache-render/extract.mts scripts/cache-render/adapter.mts
+  .cache-render/openrs2/2437/cache cache-render-bundle` from the SDK repo after
+  `npx tsx scripts/cache-render/download.mts 2437`.
