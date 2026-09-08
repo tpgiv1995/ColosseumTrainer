@@ -11,6 +11,7 @@ import {
 } from "osrs-sdk";
 import { DefaultSidebar, GameOverlay, LoadoutManager, TrainerApp, TrainerLoadingSplash, useSettingsSnapshot, useSettingsStore, useTrainerSnapshot } from "osrs-sdk-react";
 import { ColosseumRegion } from "./content/colosseum/js/ColosseumRegion";
+import { ModifierHud, SetupScreen } from "./SetupScreen";
 import { colosseumLoadout, patColosseumLoadout } from "./content/colosseum/js/ColosseumLoadout";
 import {
   colosseumSettings,
@@ -97,7 +98,7 @@ function createTrainer() {
   return new TrainerInstance(region, { readyTimer: 5 });
 }
 
-type AttackSetting = Exclude<keyof ColosseumSettingsState, "showSolarFlareTiles" | "solarFlareLevel">;
+type AttackSetting = "useGrapple" | "usePhaseTransitions" | "useShields" | "useSpears" | "useTriple";
 
 function AttackCheckbox({ label, setting }: { label: string; setting: AttackSetting }) {
   const settings = useSettingsStore(colosseumSettings);
@@ -281,10 +282,24 @@ export function ColosseumApp() {
   // Handy for driving the sim from devtools or automated checks.
   (window as unknown as { colosimTrainer?: TrainerInstance }).colosimTrainer = trainer;
   const [loadoutOpen, setLoadoutOpen] = useState(false);
+  const [setupOpen, setSetupOpen] = useState(true);
+  const region = trainer.region as ColosseumRegion;
+
+  const startFight = () => {
+    setSetupOpen(false);
+    setLoadoutOpen(false);
+    trainer.reset();
+    trainer.start();
+  };
+  const openSetup = () => {
+    trainer.stop();
+    setSetupOpen(true);
+  };
 
   return (
     <TrainerApp
       trainer={trainer}
+      autoStart={false}
       onLoadingStateChange={setLoading}
     >
       <GameOverlay>
@@ -297,9 +312,26 @@ export function ColosseumApp() {
         >
           &#9881;
         </button>
+        <button
+          type="button"
+          onClick={openSetup}
+          style={{ position: "absolute", top: 4, right: 44, width: 70, padding: "4px 0", zIndex: 5, opacity: 0.8, fontSize: 14 }}
+        >
+          Setup
+        </button>
+        <ModifierHud region={region} />
         <div id="disclaimer_panel">Work in progress.<br />All assets are property of Jagex.</div>
         <TrainerLoadingSplash state={loading} />
         <DeathOverlay trainer={trainer} />
+        {setupOpen && (
+          <SetupScreen
+            loading={loading}
+            onEditLoadout={() => setLoadoutOpen(true)}
+            onStart={startFight}
+            region={region}
+            trainer={trainer}
+          />
+        )}
         <LoadoutManager
           loadouts={loadoutTemplates}
           open={loadoutOpen}
@@ -309,7 +341,7 @@ export function ColosseumApp() {
       <DefaultSidebar>
         <Sidebar
           onLoadoutToggle={() => setLoadoutOpen((open) => !open)}
-          region={trainer.region as ColosseumRegion}
+          region={region}
         />
       </DefaultSidebar>
     </TrainerApp>

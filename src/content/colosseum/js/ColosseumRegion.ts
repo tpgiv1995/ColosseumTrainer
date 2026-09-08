@@ -14,6 +14,7 @@ import { WallMan } from "./entities/WallMan";
 import { colosseumSettings } from "./ColosseumSettings";
 import { SolarFlareOrb } from "./entities/SolarFlareOrb";
 import { SolarFlareTile } from "./entities/SolarFlareTile";
+import { applyColosseumModifiers, clampOverheal, ColosseumModifierTracker } from "./ColosseumModifiers";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -177,9 +178,13 @@ export class ColosseumRegion extends Region {
     };
   }
 
+  /** Practice mode and modifier state for the current fight. */
+  modifiers: ColosseumModifierTracker | null = null;
+
   override reset(startWorld = true) {
     const reset = super.reset(startWorld);
     configureColosseumPlayer(reset.player);
+    this.modifiers = applyColosseumModifiers(reset.player, colosseumSettings.getSnapshot());
     return reset;
   }
 
@@ -256,6 +261,9 @@ export class ColosseumRegion extends Region {
 
   private replayTick = 1;
   override postTick() {
+    if (this.modifiers && this.players[0]) {
+      clampOverheal(this.players[0], this.modifiers.state);
+    }
     if (!this.enableReplay || this.world.getReadyTimer > 0) {
       return;
     }
