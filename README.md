@@ -96,6 +96,18 @@ plan live in `docs/superpowers/`.
   potions in the inventory). Prayer level is 93.
 - Layout: `modernLayout` setting (on by default) draws one bottom tab row, a larger
   panel, and a visual-only chat strip. The site sidebar hides behind the gear button.
+- Fight setup: the sim opens on a setup screen (loadout, prayer layout, keybinds, camera,
+  practice mode, modifiers, Sol's attack toggles). Start applies everything with a fresh
+  reset; the in-game Setup button (top right) reopens it. Dying shows a Try again overlay
+  (Enter also restarts) that keeps every setting.
+- Practice mode caps each of Sol's hits at 1-2 so more of his rotation can be seen.
+- Modifiers (numbers from the wiki modifiers page): Doom dies at 15/10/5 stacks, one stack per
+  damaging hit; Frailty -10/20/40% max HP and no overheal; Myopia -2/4/6 attack range (manual
+  casts unaffected); Blasphemy drains 20/40/60% of damage taken from prayer (rounded up);
+  Relentless +1/+3/+6 to Sol's hits (its accuracy part is moot: Sol's hits already ignore
+  Defence in the sim). Solar Flare is upstream's.
+- Prayer book: `Settings.prayerLayout` draws the book in Pat's RuneLite arrangement (30 slots,
+  hidden prayers blank). Untick "Pat's prayer book layout" for the stock order.
 - Model fallbacks: the pinned OpenRS2 cache (2437, revision 236) has no definition for
   the Necklace of rupture (33639), so it has a sprite and stats but no character mesh.
   Everything else in the loadout renders from the cache.
