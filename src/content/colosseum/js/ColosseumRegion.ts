@@ -52,10 +52,38 @@ class SceneCoordinateLabel extends Entity {
   create3dModel() { return CanvasSpriteModel.forRenderable(this); }
 }
 
+/** Per-fight tally shown on the post-fight summary. */
+export type FightStats = {
+  result: "win" | "loss" | null;
+  damageDealt: number;
+  damageTaken: number;
+  hitsTaken: number;
+  startTick: number | null;
+  endTick: number | null;
+  durationSeconds: number;
+  dps: number;
+};
+
+function emptyFightStats(): FightStats {
+  return {
+    result: null,
+    damageDealt: 0,
+    damageTaken: 0,
+    hitsTaken: 0,
+    startTick: null,
+    endTick: null,
+    durationSeconds: 0,
+    dps: 0,
+  };
+}
+
 export class ColosseumRegion extends Region {
   constructor(loadouts: Loadout[] = [colosseumLoadout]) {
     super(loadouts);
   }
+
+  /** Live tally for the current fight; reset on every fight start. */
+  fightStats: FightStats = emptyFightStats();
 
   mapImage: HTMLImageElement = ImageLoader.createImage(ColosseumMapImage);
 
@@ -185,7 +213,34 @@ export class ColosseumRegion extends Region {
     const reset = super.reset(startWorld);
     configureColosseumPlayer(reset.player);
     this.modifiers = applyColosseumModifiers(reset.player, colosseumSettings.getSnapshot());
+
+    this.fightStats = emptyFightStats();
+    reset.player.damageTakenListeners.push((damage) => {
+      if (this.fightStats.result || damage <= 0) return;
+      this.fightStats.damageTaken += damage;
+      this.fightStats.hitsTaken += 1;
+    });
+    // A reset happens while the world is live, so the fresh boss is queued in
+    // newMobs (not yet promoted to mobs) - look in both.
+    const boss = [...this.mobs, ...this.newMobs].find((mob) => mob instanceof SolHeredit) as SolHeredit | undefined;
+    if (boss) {
+      boss.onDamageTaken = (damage) => {
+        if (this.fightStats.result || damage <= 0) return;
+        this.fightStats.damageDealt += damage;
+      };
+    }
     return reset;
+  }
+
+  /** Duration is measured from the first live tick (after the ready timer). */
+  private finishFight(result: "win" | "loss") {
+    if (this.fightStats.result) return;
+    this.fightStats.result = result;
+    this.fightStats.endTick = this.world.globalTickCounter;
+    const start = this.fightStats.startTick ?? this.fightStats.endTick;
+    const ticks = Math.max(0, this.fightStats.endTick - start);
+    this.fightStats.durationSeconds = ticks * 0.6;
+    this.fightStats.dps = this.fightStats.durationSeconds > 0 ? this.fightStats.damageDealt / this.fightStats.durationSeconds : 0;
   }
 
   setSolarFlareLevel(level: number) {
@@ -251,11 +306,14 @@ export class ColosseumRegion extends Region {
   private enableReplay = false;
   override onUnitDeath(unit: Unit) {
     if (unit instanceof Player) {
+      this.finishFight("loss");
       this.mobs.forEach((mob) => {
         if (mob instanceof SolHeredit) {
           mob.tauntPlayerDeath();
         }
       });
+    } else if (unit instanceof SolHeredit) {
+      this.finishFight("win");
     }
   }
 
@@ -263,6 +321,9 @@ export class ColosseumRegion extends Region {
   override postTick() {
     if (this.modifiers && this.players[0]) {
       clampOverheal(this.players[0], this.modifiers.state);
+    }
+    if (this.fightStats.startTick === null && !this.fightStats.result && this.world.getReadyTimer <= 0) {
+      this.fightStats.startTick = this.world.globalTickCounter;
     }
     if (!this.enableReplay || this.world.getReadyTimer > 0) {
       return;

@@ -9,8 +9,8 @@ import {
   TrainerInstance,
   TrainerLoadingState,
 } from "osrs-sdk";
-import { DefaultSidebar, GameOverlay, LoadoutManager, TrainerApp, TrainerLoadingSplash, useSettingsSnapshot, useSettingsStore, useTrainerSnapshot } from "osrs-sdk-react";
-import { ColosseumRegion } from "./content/colosseum/js/ColosseumRegion";
+import { DefaultSidebar, GameOverlay, LoadoutManager, TrainerApp, TrainerLoadingSplash, useSettingsSnapshot, useSettingsStore } from "osrs-sdk-react";
+import { ColosseumRegion, FightStats } from "./content/colosseum/js/ColosseumRegion";
 import { ModifierHud, SetupScreen, toggleFullscreen } from "./SetupScreen";
 import { colosseumLoadout, v3ColosseumLoadout } from "./content/colosseum/js/ColosseumLoadout";
 import {
@@ -119,24 +119,56 @@ function AttackCheckbox({ label, setting }: { label: string; setting: AttackSett
   );
 }
 
-/** Shown when the player dies: one big button (or Enter) restarts the fight. Settings are untouched. */
-function DeathOverlay({ trainer }: { trainer: TrainerInstance }) {
-  const playerDead = useTrainerSnapshot((snapshot) => snapshot.playerDead);
+function formatDuration(seconds: number) {
+  const total = Math.max(0, Math.round(seconds));
+  const minutes = Math.floor(total / 60);
+  const secs = total % 60;
+  return `${minutes}:${String(secs).padStart(2, "0")}`;
+}
+
+function StatLine({ label, value }: { label: string; value: string }) {
+  return (
+    <div style={{ display: "flex", justifyContent: "space-between", gap: 24, fontSize: 16, margin: "5px 0" }}>
+      <span style={{ color: "#cbb994" }}>{label}</span>
+      <span style={{ color: "#ffffff" }}>{value}</span>
+    </div>
+  );
+}
+
+/**
+ * Shown when a fight ends (win or loss) with a post-fight summary. Enter or the
+ * button restarts with the same gear and settings; Setup reopens the config.
+ */
+function FightResultOverlay({ trainer, region, onSetup }: { trainer: TrainerInstance; region: ColosseumRegion; onSetup: () => void }) {
+  const [stats, setStats] = useState<FightStats | null>(null);
 
   useEffect(() => {
-    if (!playerDead) return;
+    const id = window.setInterval(() => {
+      const current = region.fightStats;
+      setStats((prev) => {
+        if (current.result && (!prev || prev.result !== current.result)) return { ...current };
+        if (!current.result && prev) return null;
+        return prev;
+      });
+    }, 200);
+    return () => window.clearInterval(id);
+  }, [region]);
+
+  useEffect(() => {
+    if (!stats) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         // The focused button may also fire a click; only the first restart does anything.
-        if (trainer.getSnapshot().playerDead) trainer.reset();
+        if (region.fightStats.result) trainer.reset();
       }
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [playerDead, trainer]);
+  }, [stats, trainer, region]);
 
-  if (!playerDead) return null;
+  if (!stats) return null;
+  const win = stats.result === "win";
   return (
     <div
       style={{
@@ -159,18 +191,36 @@ function DeathOverlay({ trainer }: { trainer: TrainerInstance }) {
           color: "#ff981f",
           fontFamily: "OSRS",
           boxShadow: "0 0 24px #000",
+          minWidth: 320,
         }}
       >
-        <div style={{ fontSize: 34, color: "#ff3333", textShadow: "2px 2px #000" }}>Oh dear, you are dead!</div>
-        <div style={{ fontSize: 16, color: "#ffffff", margin: "10px 0 18px" }}>Same gear, same keybinds, same settings.</div>
-        <button
-          type="button"
-          autoFocus
-          onClick={() => trainer.reset()}
-          style={{ width: 260, fontSize: 22, padding: "12px 0", border: "2px solid #ff981f", color: "#ff981f" }}
-        >
-          Try again (Enter)
-        </button>
+        <div style={{ fontSize: 34, color: win ? "#4cd964" : "#ff3333", textShadow: "2px 2px #000" }}>
+          {win ? "Sol Heredit defeated!" : "Oh dear, you are dead!"}
+        </div>
+        <div style={{ margin: "16px 0 6px", textAlign: "left" }}>
+          <StatLine label="Damage dealt" value={`${stats.damageDealt}`} />
+          <StatLine label="DPS" value={stats.dps.toFixed(2)} />
+          <StatLine label="Damage taken" value={`${stats.damageTaken}`} />
+          <StatLine label="Missteps (hits taken)" value={`${stats.hitsTaken}`} />
+          <StatLine label="Duration" value={formatDuration(stats.durationSeconds)} />
+        </div>
+        <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+          <button
+            type="button"
+            autoFocus
+            onClick={() => trainer.reset()}
+            style={{ flex: 2, fontSize: 20, padding: "12px 0", border: "2px solid #ff981f", color: "#ff981f" }}
+          >
+            Try again (Enter)
+          </button>
+          <button
+            type="button"
+            onClick={onSetup}
+            style={{ flex: 1, fontSize: 16, padding: "12px 0", border: "2px solid #5c4a2a", color: "#cbb994" }}
+          >
+            Setup
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -338,12 +388,13 @@ export function ColosseumApp() {
         <ModifierHud region={region} />
         <div id="disclaimer_panel">Work in progress.<br />All assets are property of Jagex.</div>
         <TrainerLoadingSplash state={loading} />
-        <DeathOverlay trainer={trainer} />
+        <FightResultOverlay trainer={trainer} region={region} onSetup={openSetup} />
         {setupOpen && (
           <SetupScreen
             loading={loading}
             onEditLoadout={() => setLoadoutOpen(true)}
             onStart={startFight}
+            onClose={() => setSetupOpen(false)}
             region={region}
             trainer={trainer}
           />

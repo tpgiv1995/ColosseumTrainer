@@ -159,6 +159,14 @@ export class SolHeredit extends Mob {
   firstSpear = true;
   firstShield = true;
 
+  /** Set by ColosseumRegion to tally damage the player deals to Sol. */
+  onDamageTaken: ((damage: number) => void) | null = null;
+
+  override damageTaken(damage = 0) {
+    super.damageTaken(damage);
+    this.onDamageTaken?.(damage);
+  }
+
   specialAttackCooldown = 0;
 
   forceAttack: Attacks | null = Attacks.SPEAR; // first attack is always a spear

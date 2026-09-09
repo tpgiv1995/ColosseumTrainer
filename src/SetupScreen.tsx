@@ -26,6 +26,7 @@ const KEY_FIELDS: { field: KeyField; label: string }[] = [
 ];
 
 const panel: React.CSSProperties = {
+  position: "relative",
   background: "#2b2620",
   border: "3px solid #5c4a2a",
   borderRadius: 6,
@@ -33,9 +34,22 @@ const panel: React.CSSProperties = {
   fontFamily: "OSRS",
   boxShadow: "0 0 24px #000",
   padding: "18px 26px",
-  width: 520,
+  width: 880,
+  maxWidth: "94vw",
   maxHeight: "92%",
   overflowY: "auto",
+};
+const columns: React.CSSProperties = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 32px" };
+const closeButton: React.CSSProperties = {
+  position: "absolute",
+  top: 10,
+  right: 12,
+  width: 34,
+  height: 34,
+  padding: 0,
+  margin: 0,
+  fontSize: 20,
+  lineHeight: "30px",
 };
 const heading: React.CSSProperties = { color: "#ffffff", fontSize: 18, margin: "14px 0 6px", borderBottom: "1px solid #5c4a2a" };
 const row: React.CSSProperties = { display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, margin: "4px 0", fontSize: 15 };
@@ -109,12 +123,13 @@ export type SetupScreenProps = {
   loading?: TrainerLoadingState;
   onEditLoadout: () => void;
   onStart: () => void;
+  onClose: () => void;
   region: ColosseumRegion;
   trainer: TrainerInstance;
 };
 
 /** Pre-fight configuration: everything is applied on Start via a full reset. */
-export function SetupScreen({ loading, onEditLoadout, onStart, region }: SetupScreenProps) {
+export function SetupScreen({ loading, onEditLoadout, onStart, onClose, region }: SetupScreenProps) {
   const settings = useSettingsSnapshot();
   const colosseum = useSettingsStore(colosseumSettings);
   const ready = loading?.status === "ready";
@@ -125,88 +140,104 @@ export function SetupScreen({ loading, onEditLoadout, onStart, region }: SetupSc
       style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.6)", zIndex: 7 }}
     >
       <div style={panel}>
+        <button type="button" aria-label="Close setup" title="Close without starting" style={closeButton} onClick={onClose}>&#10005;</button>
         <div style={{ fontSize: 30, color: "#ffffff", textAlign: "center", textShadow: "2px 2px #000" }}>V3 Colosseum Sim</div>
         <div style={{ textAlign: "center", color: "#aaa", fontSize: 14 }}>Fight setup</div>
 
-        <div style={heading}>Loadout</div>
-        <div style={row}>
-          <span>{settings.customLoadout ? `${settings.loadout} (edited)` : settings.loadout}</span>
-          <button type="button" style={smallButton} onClick={onEditLoadout}>Edit loadout</button>
+        <div style={columns}>
+          <div>
+            <div style={heading}>Loadout</div>
+            <div style={row}>
+              <span>{settings.customLoadout ? `${settings.loadout} (edited)` : settings.loadout}</span>
+              <button type="button" style={smallButton} onClick={onEditLoadout}>Edit loadout</button>
+            </div>
+            <Toggle
+              label="V3 prayer book layout"
+              checked={settings.prayerLayout !== null}
+              onChange={(checked) => Settings.set({ prayerLayout: checked ? [...V3_PRAYER_LAYOUT] : null })}
+            />
+
+            <div style={heading}>Keybinds</div>
+            {KEY_FIELDS.map(({ field, label }) => (
+              <KeyCapture key={field} field={field} label={label} capturing={capturingField === field} onCapture={setCapturingField} />
+            ))}
+
+            <div style={heading}>Camera</div>
+            <div style={row}>
+              <span>Sensitivity {Math.round(settings.cameraSensitivity * 100)}%</span>
+              <input
+                type="range"
+                min={0.2}
+                max={1.5}
+                step={0.05}
+                style={{ width: 200 }}
+                value={settings.cameraSensitivity}
+                onChange={(event) => Settings.set({ cameraSensitivity: Number(event.currentTarget.value) })}
+              />
+            </div>
+
+            <div style={heading}>Display</div>
+            <Toggle
+              label="Fullscreen when the fight starts (Esc leaves)"
+              checked={colosseum.fullscreenOnStart}
+              onChange={(checked) => colosseumSettings.set({ fullscreenOnStart: checked })}
+            />
+            <div style={row}>
+              <span>Fullscreen now</span>
+              <button type="button" style={smallButton} onClick={() => void toggleFullscreen()}>Toggle fullscreen</button>
+            </div>
+
+            <div style={heading}>Practice</div>
+            <Toggle
+              label="Practice mode: every Sol hit does 1-2"
+              checked={colosseum.practiceMode}
+              onChange={(checked) => colosseumSettings.set({ practiceMode: checked })}
+            />
+          </div>
+
+          <div>
+            <div style={heading}>Modifiers</div>
+            <div style={row}>
+              <span>Solar Flare</span>
+              <select aria-label="Solar Flare" style={select} value={colosseum.solarFlareLevel} onChange={(event) => region.setSolarFlareLevel(Number(event.currentTarget.value))}>
+                <option value={0}>Off</option>
+                <option value={1}>I</option>
+                <option value={2}>II</option>
+                <option value={3}>III</option>
+              </select>
+            </div>
+            {(Object.keys(MODIFIER_LABELS) as (keyof typeof MODIFIER_LABELS)[]).map((id) => (
+              <TierSelect key={id} id={id} />
+            ))}
+
+            <div style={heading}>Sol's attacks</div>
+            <Toggle label="Shields" checked={colosseum.useShields} onChange={(checked) => colosseumSettings.set({ useShields: checked })} />
+            <Toggle label="Spears" checked={colosseum.useSpears} onChange={(checked) => colosseumSettings.set({ useSpears: checked })} />
+            <Toggle label="Triple parry" checked={colosseum.useTriple} onChange={(checked) => colosseumSettings.set({ useTriple: checked })} />
+            <Toggle label="Grapple" checked={colosseum.useGrapple} onChange={(checked) => colosseumSettings.set({ useGrapple: checked })} />
+            <Toggle label="Phase transitions" checked={colosseum.usePhaseTransitions} onChange={(checked) => colosseumSettings.set({ usePhaseTransitions: checked })} />
+          </div>
         </div>
-        <Toggle
-          label="V3 prayer book layout"
-          checked={settings.prayerLayout !== null}
-          onChange={(checked) => Settings.set({ prayerLayout: checked ? [...V3_PRAYER_LAYOUT] : null })}
-        />
 
-        <div style={heading}>Keybinds</div>
-        {KEY_FIELDS.map(({ field, label }) => (
-          <KeyCapture key={field} field={field} label={label} capturing={capturingField === field} onCapture={setCapturingField} />
-        ))}
-
-        <div style={heading}>Camera</div>
-        <div style={row}>
-          <span>Sensitivity {Math.round(settings.cameraSensitivity * 100)}%</span>
-          <input
-            type="range"
-            min={0.2}
-            max={1.5}
-            step={0.05}
-            style={{ width: 260 }}
-            value={settings.cameraSensitivity}
-            onChange={(event) => Settings.set({ cameraSensitivity: Number(event.currentTarget.value) })}
-          />
+        <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 16 }}>
+          <button
+            type="button"
+            disabled={!ready}
+            onClick={onStart}
+            style={{ flex: 3, fontSize: 22, padding: "12px 0", border: "2px solid #ff981f", color: ready ? "#ff981f" : "#777" }}
+          >
+            {ready ? "Start fight" : "Loading..."}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            style={{ flex: 1, fontSize: 16, padding: "12px 0", border: "2px solid #5c4a2a", color: "#cbb994" }}
+          >
+            Close
+          </button>
         </div>
-
-        <div style={heading}>Display</div>
-        <Toggle
-          label="Fullscreen when the fight starts (Esc leaves)"
-          checked={colosseum.fullscreenOnStart}
-          onChange={(checked) => colosseumSettings.set({ fullscreenOnStart: checked })}
-        />
-        <div style={row}>
-          <span>Fullscreen now</span>
-          <button type="button" style={smallButton} onClick={() => void toggleFullscreen()}>Toggle fullscreen</button>
-        </div>
-
-        <div style={heading}>Practice</div>
-        <Toggle
-          label="Practice mode: every Sol hit does 1-2"
-          checked={colosseum.practiceMode}
-          onChange={(checked) => colosseumSettings.set({ practiceMode: checked })}
-        />
-
-        <div style={heading}>Modifiers</div>
-        <div style={row}>
-          <span>Solar Flare</span>
-          <select aria-label="Solar Flare" style={select} value={colosseum.solarFlareLevel} onChange={(event) => region.setSolarFlareLevel(Number(event.currentTarget.value))}>
-            <option value={0}>Off</option>
-            <option value={1}>I</option>
-            <option value={2}>II</option>
-            <option value={3}>III</option>
-          </select>
-        </div>
-        {(Object.keys(MODIFIER_LABELS) as (keyof typeof MODIFIER_LABELS)[]).map((id) => (
-          <TierSelect key={id} id={id} />
-        ))}
-
-        <div style={heading}>Sol's attacks</div>
-        <Toggle label="Shields" checked={colosseum.useShields} onChange={(checked) => colosseumSettings.set({ useShields: checked })} />
-        <Toggle label="Spears" checked={colosseum.useSpears} onChange={(checked) => colosseumSettings.set({ useSpears: checked })} />
-        <Toggle label="Triple parry" checked={colosseum.useTriple} onChange={(checked) => colosseumSettings.set({ useTriple: checked })} />
-        <Toggle label="Grapple" checked={colosseum.useGrapple} onChange={(checked) => colosseumSettings.set({ useGrapple: checked })} />
-        <Toggle label="Phase transitions" checked={colosseum.usePhaseTransitions} onChange={(checked) => colosseumSettings.set({ usePhaseTransitions: checked })} />
-
-        <button
-          type="button"
-          disabled={!ready}
-          onClick={onStart}
-          style={{ marginTop: 16, fontSize: 22, padding: "12px 0", border: "2px solid #ff981f", color: ready ? "#ff981f" : "#777" }}
-        >
-          {ready ? "Start fight" : "Loading..."}
-        </button>
         <div style={{ color: "#aaa", fontSize: 12, textAlign: "center", marginTop: 6 }}>
-          Everything here is saved as you change it. Reopen with the Setup button in-game.
+          Everything here is saved as you change it. Close (or the X) to tweak other settings without fighting; reopen with Setup in-game.
         </div>
       </div>
     </div>
