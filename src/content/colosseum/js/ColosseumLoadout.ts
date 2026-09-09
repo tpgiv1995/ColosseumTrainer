@@ -103,9 +103,6 @@ export function configureColosseumPlayer(player: Player) {
   player.stats.defence = 99;
   player.currentStats.defence = 99;
 
-  // A fake supercombat boost.
-  for (const stat of ["attack", "strength", "defence"] as const) {
-    const boost = Math.floor(player.stats[stat] * 0.15) + 5;
-    player.currentStats[stat] = player.stats[stat] + boost;
-  }
+  // No auto-boost. The player starts at base stats; a super-combat boost only
+  // applies if one is actually drunk from the inventory, and it drains over time.
 }
