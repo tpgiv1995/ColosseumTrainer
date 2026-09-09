@@ -387,7 +387,11 @@ export function ColosseumApp() {
         </button>
         <ModifierHud region={region} />
         <div id="disclaimer_panel">Work in progress.<br />All assets are property of Jagex.</div>
-        <TrainerLoadingSplash state={loading} />
+        <TrainerLoadingSplash
+          state={loading}
+          style={{ height: "auto", top: "auto", bottom: 6, fontSize: "11pt", gap: 4, pointerEvents: "none" }}
+          progressBar={{ backgroundColor: "#282828", borderColor: "#FFFF00", fillColor: "#FFFF00", style: { width: 220, height: "0.5rem", marginTop: 4 } }}
+        />
         <FightResultOverlay trainer={trainer} region={region} onSetup={openSetup} />
         {setupOpen && (
           <SetupScreen
